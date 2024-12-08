@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fidelius-go/decryption"
-	"fidelius-go/encryption"
-	"fidelius-go/keypairgen"
-	"fidelius-go/utils"
 	"fmt"
+
+	"github.com/zoop/fidelius-go/decryption"
+	"github.com/zoop/fidelius-go/encryption"
+	"github.com/zoop/fidelius-go/keypairgen"
+	"github.com/zoop/fidelius-go/utils"
 )
 
 // https://i.ibb.co/cNb7S4h/Encryption.png

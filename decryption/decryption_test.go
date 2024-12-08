@@ -1,10 +1,11 @@
 package decryption
 
 import (
-	"fidelius-go/encryption"
-	"fidelius-go/keypairgen"
-	"fidelius-go/utils"
 	"testing"
+
+	"github.com/zoop/fidelius-go/encryption"
+	"github.com/zoop/fidelius-go/keypairgen"
+	"github.com/zoop/fidelius-go/utils"
 
 	"github.com/stretchr/testify/assert"
 )

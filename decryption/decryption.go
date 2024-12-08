@@ -3,7 +3,8 @@ package decryption
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"fidelius-go/utils"
+
+	"github.com/zoop/fidelius-go/utils"
 )
 
 /* -------------------------------------------------------------------------- */

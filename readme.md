@@ -1,5 +1,5 @@
 # ZOOP FIDELIUS GO
-fidelius-go is a Go library designed to simplify encryption and decryption processes in secure data exchange workflows between HIU (Health Information User), HCDM (Health Claims Data Manager), and HIP (Health Information Provider). It adheres to secure cryptographic standards and implements all the steps outlined in the data flow.
+github.com/zoop/fidelius-go is a Go library designed to simplify encryption and decryption processes in secure data exchange workflows between HIU (Health Information User), HCDM (Health Claims Data Manager), and HIP (Health Information Provider). It adheres to secure cryptographic standards and implements all the steps outlined in the data flow.
 
 ## Features
 - Encryption: Generates secure keys, salts, and initialization vectors (IV) for encrypting sensitive data.
@@ -11,15 +11,15 @@ fidelius-go is a Go library designed to simplify encryption and decryption proce
 ## Installation
 
 ```
-go get github.com/zoop/fidelius-go
+go get github.com/zoop/github.com/zoop/fidelius-go
 ```
 
 ## Usage
 ### Key Pair Generation
 ```
 import (
-	"fidelius-go/keypairgen"
-	"fidelius-go/utils"
+	"github.com/zoop/fidelius-go/keypairgen"
+	"github.com/zoop/fidelius-go/utils"
     "fmt"
 )
 
@@ -35,8 +35,8 @@ func main() {
 ### Encryption
 ```
 import (
-	"fidelius-go/encryption"
-	"fidelius-go/utils"
+	"github.com/zoop/fidelius-go/encryption"
+	"github.com/zoop/fidelius-go/utils"
     "fmt"
 )
 
@@ -63,7 +63,7 @@ func main() {
 ### Decryption
 ```
 import (
-	"fidelius-go/decryption"
+	"github.com/zoop/fidelius-go/decryption"
     "fmt"
 )
 

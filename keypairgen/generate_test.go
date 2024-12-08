@@ -1,8 +1,9 @@
 package keypairgen
 
 import (
-	"fidelius-go/utils"
 	"testing"
+
+	"github.com/zoop/fidelius-go/utils"
 
 	"github.com/stretchr/testify/assert"
 )
