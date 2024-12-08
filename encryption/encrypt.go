@@ -4,9 +4,13 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 
+	"github.com/pkg/errors"
 	"github.com/zoop/fidelius-go/utils"
 )
 
+/* -------------------------------------------------------------------------- */
+/*                                   Encrypt                                  */
+/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 /*                                   Encrypt                                  */
 /* -------------------------------------------------------------------------- */
@@ -14,18 +18,18 @@ func (ec *encryptionHandler) Encrypt(request *EncryptionRequest) (*EncryptionRes
 	var encryptionResponse *EncryptionResponse
 	senderNonce, err := utils.DecodeBase64(request.SenderNonce)
 	if err != nil {
-		return encryptionResponse, err
+		return encryptionResponse, errors.Wrap(err, "[Encrypt][utils.DecodeBase64(request.SenderNonce)]")
 	}
 	requesterNonce, err := utils.DecodeBase64(request.RequesterNonce)
 	if err != nil {
-		return encryptionResponse, err
+		return encryptionResponse, errors.Wrap(err, "[Encrypt][utils.DecodeBase64(request.RequesterNonce)]")
 	}
 	xorOfNonces, err := utils.CalculateXorOfBytes(
 		senderNonce,
 		requesterNonce,
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "[Encrypt][utils.CalculateXorOfBytes]")
 	}
 	iv := xorOfNonces[len(xorOfNonces)-12:]
 	salt := xorOfNonces[:20]
@@ -37,7 +41,7 @@ func (ec *encryptionHandler) Encrypt(request *EncryptionRequest) (*EncryptionRes
 		request.StringToEncrypt,
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "[Encrypt][ec.process]")
 	}
 	encryptionResponse = &EncryptionResponse{
 		EncryptedData: encryptedData,
@@ -57,7 +61,7 @@ func (ec *encryptionHandler) process(
 ) (string, error) {
 	sharedSecret, err := utils.ComputeSharedSecret(senderPrivateKey, requesterPublicKey)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "[utils.ComputeSharedSecret]")
 	}
 	aesEncryptionKey := utils.DeriveKey(salt, sharedSecret, 32)
 

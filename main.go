@@ -29,7 +29,7 @@ func main() {
 	fmt.Println("-------------------------------------------------------------------------")
 	encryptionHandler := encryption.Handler()
 
-	senderNonce := utils.GenerateRandomNonce(32)
+	senderNonce := keyMaterial.Nonce
 	recieverNone := utils.GenerateRandomNonce(32)
 	request := &encryption.EncryptionRequest{
 		StringToEncrypt:    "Hello, World!",
