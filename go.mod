@@ -1,4 +1,4 @@
-module github.com/zoop/github.com/zoop/fidelius-go
+module github.com/zoop/fidelius-go
 
 go 1.22.5
 
