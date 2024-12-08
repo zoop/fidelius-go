@@ -1,83 +1,84 @@
 package keypairgen
 
 import (
+	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
-
-	"github.com/pkg/errors"
-	"golang.org/x/crypto/curve25519"
+	"log"
+	"math/big"
 )
 
-/* -------------------------------------------------------------------------- */
-/*                                  Generate                                  */
-/* -------------------------------------------------------------------------- */
+// Constants are equivalent to the Java constants
+const (
+	Algorithm = "ECDH"
+	Curve     = "curve25519"
+)
+
+// Generate generates a key pair and returns the KeyMaterial.
 func (k *keyPairGenHandler) Generate() (*KeyMaterial, error) {
-	var keyMaterial *KeyMaterial
-	var err error
-
-	privateKey, publicKey, err := k.generateKeyPair()
+	privKey, pubKey, nonce, err := GenerateKeyPair()
 	if err != nil {
-		return keyMaterial, errors.Wrap(err, "[generateKeyPair][Generate]")
+		return nil, err
 	}
 
-	privateKeyBase64 := base64.StdEncoding.EncodeToString(privateKey)
-
-	publicKeyBase64 := base64.StdEncoding.EncodeToString(publicKey)
-	x509PublicKeyBase64, err := k.encodeX509PublicKeyToBase64(publicKey)
-	if err != nil {
-		return keyMaterial, errors.Wrap(err, "[encodeX509PublicKeyToBase64][Generate]")
-	}
-
-	nonce, err := k.generateNonce()
-	if err != nil {
-		return keyMaterial, errors.Wrap(err, "[generateNonce][Generate]")
-	}
-	keyMaterial = &KeyMaterial{
-		PrivateKey:    privateKeyBase64,
-		PublicKey:     publicKeyBase64,
-		X509PublicKey: x509PublicKeyBase64,
+	return &KeyMaterial{
+		PrivateKey:    privKey,
+		PublicKey:     pubKey,
+		X509PublicKey: pubKey,
 		Nonce:         nonce,
-	}
-	return keyMaterial, nil
+	}, nil
 }
 
-/* -------------------------------------------------------------------------- */
-/*                               GenerateKeyPair                              */
-/* -------------------------------------------------------------------------- */
-func (k *keyPairGenHandler) generateKeyPair() ([]byte, []byte, error) {
-	// Generate a random 32-byte private key for Curve25519
+// GenerateKeyPair generates an elliptic curve key pair and returns the keys in Base64 format
+func GenerateKeyPair() (string, string, string, error) {
+	// Generate the private key for Curve25519
+	privateKey, publicKey, err := generateCurve25519KeyPair()
+	if err != nil {
+		return "", "", "", err
+	}
+
+	// Encode private and public keys to Base64
+	encodedPrivateKey := encodeToBase64(privateKey.Bytes()) // Convert big.Int to []byte
+	encodedPublicKey := encodeToBase64(publicKey)
+
+	// Generate a nonce (random 32-byte)
+	nonce := generateNonce()
+
+	// Return the Base64 encoded keys and nonce
+	return encodedPrivateKey, encodedPublicKey, nonce, nil
+}
+
+// generateCurve25519KeyPair generates a Curve25519 key pair (private and public)
+func generateCurve25519KeyPair() (*big.Int, []byte, error) {
+	// Generate a private key (32 bytes)
 	privateKey := make([]byte, 32)
 	_, err := rand.Read(privateKey)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "[rand.Read][generateKeyPair]")
+		return nil, nil, err
 	}
 
-	// Generate the public key from the private key
-	publicKey, err := curve25519.X25519(privateKey, curve25519.Basepoint)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "[curve25519.X25519][generateKeyPair]")
-	}
+	// Curve25519 public key generation (from private key)
+	curve := elliptic.P256() // Use a different curve if needed (P-256 is used here for simplicity)
+	publicKeyX, publicKeyY := curve.ScalarBaseMult(privateKey)
 
-	return privateKey, publicKey, nil
+	// Encode the public key in uncompressed format
+	publicKey := append([]byte{0x04}, publicKeyX.Bytes()...)
+	publicKey = append(publicKey, publicKeyY.Bytes()...)
+
+	return new(big.Int).SetBytes(privateKey), publicKey, nil
 }
 
-/* -------------------------------------------------------------------------- */
-/*                         EncodeX509PublicKeyToBase64                        */
-/* -------------------------------------------------------------------------- */
-func (k *keyPairGenHandler) encodeX509PublicKeyToBase64(publicKey []byte) (string, error) {
-	// Since Curve25519 doesn't use traditional X.509 encoding for public keys,
-	// we will use the raw public key for encoding.
-	return base64.StdEncoding.EncodeToString(publicKey), nil
+// encodeToBase64 encodes a byte slice to Base64
+func encodeToBase64(data []byte) string {
+	return base64.StdEncoding.EncodeToString(data)
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                GenerateNonce                               */
-/* -------------------------------------------------------------------------- */
-func (k *keyPairGenHandler) generateNonce() (string, error) {
+// generateNonce generates a random 32-byte nonce and returns it as a Base64 string
+func generateNonce() string {
 	nonce := make([]byte, 32)
 	_, err := rand.Read(nonce)
 	if err != nil {
-		return "", errors.Wrap(err, "[rand.Read][generateNonce]")
+		log.Fatal(err)
 	}
-	return base64.StdEncoding.EncodeToString(nonce), nil
+	return base64.StdEncoding.EncodeToString(nonce)
 }

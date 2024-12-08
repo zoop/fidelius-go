@@ -36,7 +36,7 @@ func main() {
 		SenderNonce:        senderNonce,
 		RequesterNonce:     recieverNone,
 		SenderPrivateKey:   keyMaterial.PrivateKey,
-		RequesterPublicKey: keyMaterial.PublicKey,
+		RequesterPublicKey: keyMaterial.X509PublicKey,
 	}
 	response, err := encryptionHandler.Encrypt(request)
 	if err != nil {
