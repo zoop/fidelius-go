@@ -1,11 +1,17 @@
 package decryption
 
-type decryptionHandler struct{}
+import "github.com/zoop/fidelius-go/utils"
+
+type decryptionHandler struct {
+	Curve *utils.Curve
+}
 
 /* -------------------------------------------------------------------------- */
 /*                              DecryptionHandler                             */
 /* -------------------------------------------------------------------------- */
-func Handler() *decryptionHandler {
-	controller := &decryptionHandler{}
+func Handler(curve *utils.Curve) *decryptionHandler {
+	controller := &decryptionHandler{
+		Curve: curve,
+	}
 	return controller
 }

@@ -3,79 +3,62 @@ package encryption
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"encoding/base64"
 
-	"github.com/pkg/errors"
 	"github.com/zoop/fidelius-go/utils"
 )
 
 /* -------------------------------------------------------------------------- */
 /*                                   Encrypt                                  */
 /* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-/*                                   Encrypt                                  */
-/* -------------------------------------------------------------------------- */
-func (ec *encryptionHandler) Encrypt(request *EncryptionRequest) (*EncryptionResponse, error) {
-	var encryptionResponse *EncryptionResponse
-	senderNonce, err := utils.DecodeBase64(request.SenderNonce)
+func (cc *encryptionHandler) Encrypt(req EncryptionRequest) (string, error) {
+	// Decode base64 nonces
+	senderNonce, err := base64.StdEncoding.DecodeString(req.SenderNonce)
 	if err != nil {
-		return encryptionResponse, errors.Wrap(err, "[Encrypt][utils.DecodeBase64(request.SenderNonce)]")
+		return "", err
 	}
-	requesterNonce, err := utils.DecodeBase64(request.RequesterNonce)
+	requesterNonce, err := base64.StdEncoding.DecodeString(req.RequesterNonce)
 	if err != nil {
-		return encryptionResponse, errors.Wrap(err, "[Encrypt][utils.DecodeBase64(request.RequesterNonce)]")
+		return "", err
 	}
-	xorOfNonces, err := utils.CalculateXorOfBytes(
-		senderNonce,
-		requesterNonce,
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "[Encrypt][utils.CalculateXorOfBytes]")
-	}
-	iv := xorOfNonces[len(xorOfNonces)-12:]
-	salt := xorOfNonces[:20]
-	encryptedData, err := ec.process(
-		iv,
-		salt,
-		request.SenderPrivateKey,
-		request.RequesterPublicKey,
-		request.StringToEncrypt,
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "[Encrypt][ec.process]")
-	}
-	encryptionResponse = &EncryptionResponse{
-		EncryptedData: encryptedData,
-	}
-	return encryptionResponse, nil
-}
 
-/* -------------------------------------------------------------------------- */
-/*                                   Process                                  */
-/* -------------------------------------------------------------------------- */
-func (ec *encryptionHandler) process(
-	iv []byte,
-	salt []byte,
-	senderPrivateKey string,
-	requesterPublicKey string,
-	stringToEncrypt string,
-) (string, error) {
-	sharedSecret, err := utils.ComputeSharedSecret(senderPrivateKey, requesterPublicKey)
+	// XOR nonces to generate IV and salt
+	xorOfNonces, err := utils.XORBytes(senderNonce, requesterNonce)
 	if err != nil {
-		return "", errors.Wrap(err, "[utils.ComputeSharedSecret]")
+		return "", err
 	}
-	aesEncryptionKey := utils.DeriveKey(salt, sharedSecret, 32)
 
-	plaintext := []byte(stringToEncrypt)
+	iv := xorOfNonces[len(xorOfNonces)-12:] // Last 12 bytes for IV
+	salt := xorOfNonces[:20]                // First 20 bytes for salt
+
+	// Compute the shared secret
+	sharedSecret, err := utils.ComputeSharedSecret(req.SenderPrivateKey, req.RequesterPublicKey, cc.Curve)
+	if err != nil {
+		return "", err
+	}
+
+	// Derive the AES encryption key using HKDF
+	aesEncryptionKey, err := utils.Sha256HKDF(salt, sharedSecret, 32)
+	if err != nil {
+		return "", err
+	}
+
+	// Create AES cipher block
 	block, err := aes.NewCipher(aesEncryptionKey)
 	if err != nil {
 		return "", err
 	}
 
+	// Use GCM mode
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", err
 	}
 
+	// Encrypt the data
+	plaintext := []byte(req.StringToEncrypt)
 	ciphertext := aesGCM.Seal(nil, iv, plaintext, nil)
-	return utils.EncodeBase64(ciphertext), nil
+
+	// Return base64-encoded ciphertext (data + tag)
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
