@@ -24,7 +24,8 @@ import (
 )
 
 func main() {
-    keyMaterial := keypairgen.Handler()
+    BC25519, _ := utils.GetBC25519Curve()
+    keyMaterial := keypairgen.Handler(BC25519)
     fmt.Println("Nonce", keyMaterial.Nonce)
 	fmt.Println("PrivateKey", keyMaterial.PrivateKey)
 	fmt.Println("PublicKey", keyMaterial.PublicKey)
@@ -41,7 +42,8 @@ import (
 )
 
 func main() {
-    encryptionHandler := encryption.Handler()
+    BC25519, _ := utils.GetBC25519Curve()
+    encryptionHandler := encryption.Handler(BC25519)
     senderNonce := utils.GenerateRandomNonce(32)
     recieverNone := utils.GenerateRandomNonce(32)
     request := &encryption.EncryptionRequest{
@@ -56,7 +58,7 @@ func main() {
         fmt.Println("Encryption error:", err)
         return
     }
-    fmt.Println("Encrypted Data:", response.EncryptedData)
+    fmt.Println("Encrypted Data:", response)
 }
 ```
 
@@ -68,9 +70,10 @@ import (
 )
 
 func main() {
-    decryptionHandler := decryption.Handler()
+    BC25519, _ := utils.GetBC25519Curve()
+    decryptionHandler := decryption.Handler(BC25519)
 	req := decryption.DecryptionRequest{
-		EncryptedData:       response.EncryptedData,
+		EncryptedData:       encryptedData,
 		RequesterNonce:      senderNonce,
 		SenderNonce:         recieverNone,
 		RequesterPrivateKey: keyMaterial.PrivateKey,
@@ -81,7 +84,7 @@ func main() {
 		fmt.Println("Decryption failed:", err)
 		return
 	}
-	fmt.Println("Decrypted Data:", resp.DecryptedData)
+	fmt.Println("Decrypted Data:", resp)
 }
 ```
 
