@@ -18,8 +18,8 @@ go get github.com/zoop/github.com/zoop/fidelius-go
 ### Key Pair Generation
 ```
 import (
-	"github.com/zoop/fidelius-go/keypairgen"
-	"github.com/zoop/fidelius-go/utils"
+    "github.com/zoop/fidelius-go/keypairgen"
+    "github.com/zoop/fidelius-go/utils"
     "fmt"
 )
 
@@ -36,8 +36,8 @@ func main() {
 ### Encryption
 ```
 import (
-	"github.com/zoop/fidelius-go/encryption"
-	"github.com/zoop/fidelius-go/utils"
+    "github.com/zoop/fidelius-go/encryption"
+    "github.com/zoop/fidelius-go/utils"
     "fmt"
 )
 
