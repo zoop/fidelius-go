@@ -5,7 +5,7 @@ go 1.22.5
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/crypto v0.29.0
+	golang.org/x/crypto v0.31.0
 )
 
 require (
